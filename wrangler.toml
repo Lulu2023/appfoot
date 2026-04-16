@@ -1,0 +1,26 @@
+name = "futbolfr-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "39bba1934e884771bb8ec179093cf13e"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "futbolfr"
+database_id = "dd349e50-cb07-422d-9e48-b98a9005bce1"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[routes]]
+pattern = "api.futbolfr.app/*"
+zone_name = "futbolfr.app"
+
+[env.production]
+name = "futbolfr-api"
+
+[env.dev]
+name = "futbolfr-api-dev"

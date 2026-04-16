@@ -15,7 +15,13 @@ database_id   = "dd349e50-cb07-422d-9e48-b98a9005bce1"
 
 [triggers]
 crons = ["*/5 * * * *"]
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
 
+[observability.traces]
+enabled = false
 # ─── SUPPRIMÉ ────────────────────────────────────────────────
 # [[routes]]                         ← nécessite le domaine futbolfr.app
 # pattern = "api.futbolfr.app/*"

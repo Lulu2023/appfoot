@@ -429,32 +429,41 @@ async function decryptSport365Stream(
 }
 
 async function resolveSportHDMe(matchId: string): Promise<StreamResult[]> {
+  const LIVE_URL = "https://super.league.do";
+  const BASE_URL = "https://one.sporthd.me/";
   try {
-    const resp = await fetch("https://www.sporthdme.com/live/", {
+    const resp = await fetch(LIVE_URL, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        Referer: "https://www.sporthdme.com/",
+        Referer: BASE_URL,
       },
     });
     if (!resp.ok) return [];
     const html = await resp.text();
 
-    const m3u8Regex = /https?:\/\/[^"'\s]+\.m3u8[^"'\s]*/gi;
-    const urls = [...new Set(html.match(m3u8Regex) ?? [])];
-
-    return urls.slice(0, 3).map((url, i) => ({
-      id: `hdme_${i}`,
-      provider: "sporthdme.com",
-      quality: (url.includes("1080") ? "HD" : "SD") as "HD" | "SD",
-      language: url.includes("fr") ? "fr" : "en",
-      url,
-      type: "HLS" as const,
-      headers: { Referer: "https://www.sporthdme.com/" },
-      stable: false,
-    }));
-  } catch {
+    // Le plugin Kodi parse window.matches = JSON.parse(`[...]`)
+    const jsonMatch = html.match(/window\.matches\s*=\s*JSON\.parse\(`(\[[\s\S]+?\])`\)/);
+    if (jsonMatch) {
+      try {
+        const matches: any[] = JSON.parse(jsonMatch[1]);
+        return matches.slice(0, 5).flatMap((m, i) => {
+          const url = m?.props?.streamData?.streamurl ?? m?.streamurl;
+          if (!url?.startsWith("http")) return [];
+          return [{
+            id: `hdme_${m.id ?? i}`,
+            provider: "one.sporthd.me",
+            quality: (url.includes("hd") || url.includes("1080") ? "HD" : "SD") as "HD" | "SD",
+            language: url.includes("fr") ? "fr" : "en",
+            url,
+            type: "HLS" as const,
+            headers: { Referer: BASE_URL },
+            stable: true,
+          }];
+        });
+      } catch { return []; }
+    }
     return [];
-  }
+  } catch { return []; }
 }
 
 // ─── PROXY ──────────────────────────────────────────────────────────────────
